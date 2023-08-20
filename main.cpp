@@ -16,7 +16,6 @@ std::unique_ptr<Model> model{new Model("../obj/african_head.obj")};
 
 
 
-
 /// Bresenham算法
 /// \param x0
 /// \param y0
