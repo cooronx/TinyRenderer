@@ -199,7 +199,7 @@ int main(int argc, char **argv)
             world_pos[j] = vertex;
         }
         Vec3f norm_vec = (world_pos[2] - world_pos[0]) ^ (world_pos[1] - world_pos[0]);
-        norm_vec.normalize();
+        norm_vec.Normalize();
         auto intensity = norm_vec * dir;
         if(intensity > 0){
             std::array <Vec2i,3>uv_pos;
