@@ -21,7 +21,7 @@ Model::Model(const char *filename) : verts_(), faces_() {
         if (!line.compare(0, 2, "v ")) {
             iss >> trash;
             Vec3f v;
-            for (float & i : v.raw) iss >> i;
+            for(int i = 0;i<2;++i) iss>>v[i];
             verts_.push_back(v);
         }
         else if(!line.compare(0, 3, "vt ")) {
