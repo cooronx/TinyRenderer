@@ -8,9 +8,5 @@ include_directories(${PROJECT_SOURCE_DIR}/include)
 
 add_executable(TinyRenderer main.cpp
         model.cpp
-<<<<<<< HEAD
         tgaimage.cpp
         geometry.cpp)
-=======
-        tgaimage.cpp geometry.cpp)
->>>>>>> origin/main

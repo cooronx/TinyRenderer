@@ -1,9 +1,6 @@
 #include <vector>
 #include <cassert>
-<<<<<<< HEAD
 #include <cmath>
-=======
->>>>>>> origin/main
 #include <iostream>
 #include "geometry.h"
 
@@ -13,7 +10,6 @@ template <> template <> Vec3<float>::Vec3(const Vec3<int>& v) : x(v.x), y(v.y), 
 
 Matrix::Matrix(int r, int c) : m(std::vector<std::vector<float> >(r, std::vector<float>(c, 0.f))), rows(r), cols(c) { }
 
-<<<<<<< HEAD
 int Matrix::nrows() {
     return rows;
 }
@@ -23,17 +19,6 @@ int Matrix::ncols() {
 }
 
 Matrix Matrix::identity(int dimensions) {
-=======
-int Matrix::RowSize() const {
-    return rows;
-}
-
-int Matrix::ColumnSize() const {
-    return cols;
-}
-
-Matrix Matrix::Identity(int dimensions) {
->>>>>>> origin/main
     Matrix E(dimensions, dimensions);
     for (int i=0; i<dimensions; i++) {
         for (int j=0; j<dimensions; j++) {
@@ -62,11 +47,7 @@ Matrix Matrix::operator*(const Matrix& a) {
     return result;
 }
 
-<<<<<<< HEAD
 Matrix Matrix::transpose() {
-=======
-Matrix Matrix::Transpose() {
->>>>>>> origin/main
     Matrix result(cols, rows);
     for(int i=0; i<rows; i++)
         for(int j=0; j<cols; j++)
@@ -74,15 +55,9 @@ Matrix Matrix::Transpose() {
     return result;
 }
 
-<<<<<<< HEAD
 Matrix Matrix::inverse() {
     assert(rows==cols);
     // augmenting the square matrix with the identity matrix of the same dimensions a => [ai]
-=======
-Matrix Matrix::Inverse() {
-    assert(rows==cols);
-    // augmenting the square matrix with the Identity matrix of the same dimensions a => [Ai]
->>>>>>> origin/main
     Matrix result(rows, cols*2);
     for(int i=0; i<rows; i++)
         for(int j=0; j<cols; j++)
@@ -113,11 +88,7 @@ Matrix Matrix::Inverse() {
             }
         }
     }
-<<<<<<< HEAD
     // cut the identity matrix back
-=======
-    // cut the Identity matrix back
->>>>>>> origin/main
     Matrix truncate(rows, cols);
     for(int i=0; i<rows; i++)
         for(int j=0; j<cols; j++)
@@ -126,17 +97,10 @@ Matrix Matrix::Inverse() {
 }
 
 std::ostream& operator<<(std::ostream& s, Matrix& m) {
-<<<<<<< HEAD
     for (int i=0; i<m.nrows(); i++)  {
         for (int j=0; j<m.ncols(); j++) {
             s << m[i][j];
             if (j<m.ncols()-1) s << "\t";
-=======
-    for (int i=0; i< m.RowSize(); i++)  {
-        for (int j=0; j< m.ColumnSize(); j++) {
-            s << m[i][j];
-            if (j< m.ColumnSize() - 1) s << "\t";
->>>>>>> origin/main
         }
         s << "\n";
     }
