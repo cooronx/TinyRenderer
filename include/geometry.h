@@ -7,6 +7,7 @@
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+
 template <class t> struct Vec2 {
     t x, y;
     Vec2<t>() : x(t()), y(t()) {}
@@ -30,6 +31,7 @@ template <class t> struct Vec3 {
     t x, y, z;
     Vec3<t>() : x(t()), y(t()), z(t()) { }
     Vec3<t>(t _x, t _y, t _z) : x(_x), y(_y), z(_z) {}
+    Vec3<t>(const Vec3<t>&& that)  noexcept {x = that.x;y = that.y;z = that.z;}
     template <class u> explicit Vec3<t>(const Vec3<u> &v);
     Vec3<t>(const Vec3<t> &v) : x(t()), y(t()), z(t()) { *this = v; }
     Vec3<t> & operator =(const Vec3<t> &v) {
@@ -56,6 +58,8 @@ typedef Vec2<int>   Vec2i;
 typedef Vec3<float> Vec3f;
 typedef Vec3<int>   Vec3i;
 
+/// 模板结构体的构造函数的偏特化
+/// \param v
 template <> template <> Vec3<int>::Vec3(const Vec3<float> &v);
 template <> template <> Vec3<float>::Vec3(const Vec3<int> &v);
 
@@ -71,22 +75,24 @@ template <class t> std::ostream& operator<<(std::ostream& s, Vec3<t>& v) {
 }
 
 
-
+//默认分配值
 const int DEFAULT_ALLOC=4;
 
 class Matrix {
-    std::vector< std::vector<float> > m;
-    int rows, cols;
+private:
+    std::vector< std::vector<float> > m_;
+    int rows_{}, cols_{};
 public:
-    Matrix(int r=DEFAULT_ALLOC, int c=DEFAULT_ALLOC);
-    inline int nrows();
-    inline int ncols();
+    explicit Matrix(int r=DEFAULT_ALLOC, int c=DEFAULT_ALLOC);
+    Matrix(Matrix &&) noexcept ;
+    [[nodiscard]] inline int RowSize() const;
+    [[nodiscard]] inline int ColumnSize() const;
 
-    static Matrix identity(int dimensions);
-    std::vector<float>& operator[](const int i);
+    static Matrix Identity(int dimensions);
+    std::vector<float>& operator[](int i);
     Matrix operator*(const Matrix& a);
-    Matrix transpose();
-    Matrix inverse();
+    Matrix Transpose();
+    Matrix Inverse();
 
     friend std::ostream& operator<<(std::ostream& s, Matrix& m);
 };

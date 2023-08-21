@@ -7,8 +7,13 @@
 
 const TGAColor red = TGAColor(255, 0, 0, 255);
 const TGAColor green = TGAColor(0,255,0,255);
-const Vec3f dir{0,0,-1};
+Vec3f dir{0,0,-1};
+Vec3f camera{0,0,3};
 
+//我们这里默认近平面=0，远平面=255
+const int kDepth = 255;
+
+std::array<float,kPixelsCount> z_buffer{};
 
 std::unique_ptr<Model> model{new Model("../obj/african_head.obj")};
 
@@ -65,7 +70,7 @@ void DrawLine(int x0, int y0, int x1, int y1, TGAImage &image, const TGAColor &c
 /// \param p1
 /// \param image
 /// \param color
-void DrawLine(Vec2i p0,Vec2i p1,TGAImage &image, const TGAColor &color)
+void DrawLine(const Vec2i& p0,const Vec2i& p1,TGAImage &image, const TGAColor &color)
 {
     int x0 = p0.x;
     int x1 = p1.x;
@@ -110,7 +115,7 @@ void DrawLine(Vec2i p0,Vec2i p1,TGAImage &image, const TGAColor &color)
 /// \param pts 三角形的三个顶点
 /// \param P
 /// \return 该点的重心坐标
-Vec3f barycentric(const std::array<Vec3f,3> &pts,Vec2i P) {
+Vec3f barycentric(const std::array<Vec3f,3> &pts,const Vec2i& P) {
     float xa = pts[0].x;
     float ya = pts[0].y;
     float xb = pts[1].x;
@@ -175,26 +180,76 @@ void DrawTriangle(const std::array<Vec3f, 3>& pts, const std::array<Vec2i, 3>& u
 /// 世界坐标转换为屏幕坐标
 /// \param world_pos 世界坐标
 /// \return 屏幕坐标
-Vec3f WorldToScreen(Vec3f world_pos){
+Vec3f WorldToScreen(const Vec3f& world_pos){
     return Vec3f {static_cast<float>((world_pos.x + 1.0)*kWidth/2.0),static_cast<float>((world_pos.y + 1.0)*kHeight/2.0),world_pos.z};
 }
 
-std::array<float,kPixelsCount> z_buffer{};
+/// 除掉齐次坐标的w分量(齐次除法)
+/// \param m
+/// \return
+Vec3f HomoDivision(Matrix m) {
+    return {m[0][0]/m[3][0], m[1][0]/m[3][0], m[2][0]/m[3][0]};
+}
+
+/// 把一个普通的三维向量转换为齐次坐标
+/// \param v
+/// \return 齐次坐标
+Matrix VectorToMatrix(const Vec3f& v) {
+    Matrix m{4, 1};
+    m[0][0] = v.x;
+    m[1][0] = v.y;
+    m[2][0] = v.z;
+    m[3][0] = 1.f;
+    return m;
+}
+
+/// 透视投影
+/// \return 投影矩阵
+Matrix PerspectiveProjection(){
+    Matrix projection = Matrix::Identity(4);
+    projection[3][2] = -1.f/camera.z;
+    return projection;
+}
+
+
+/// 计算视口矩阵
+/// \param x
+/// \param y
+/// \param w
+/// \param h
+/// \return 视口矩阵
+Matrix ViewPort(int x, int y, int w, int h) {
+    Matrix m = Matrix::Identity(4);
+    m[0][3] = x+w/2.f;
+    m[1][3] = y+h/2.f;
+    m[2][3] = kDepth/2.f;
+
+    m[0][0] = w/2.f;
+    m[1][1] = h/2.f;
+    m[2][2] = kDepth/2.f;
+    return m;
+}
+
 int main(int argc, char **argv)
 {
 
     TGAImage image(kHeight, kWidth, TGAImage::RGB);
 
     //初始化z_buffer
-    std::fill(z_buffer.begin(),z_buffer.end(),-std::numeric_limits<float>::max());
+    std::fill(z_buffer.begin(),z_buffer.end(),std::numeric_limits<float>::min());
 
     std::array<Vec3f,3> screen_pos;
     std::array<Vec3f,3> world_pos;
+
+    //这里要将视口左下脚略微上移动，不然会出现负的坐标值
+    Matrix view_port = ViewPort(kWidth / 8, kHeight / 8, kWidth * 3 / 4, kHeight * 3 / 4);
+
+
     for(int i = 0;i<model->GetFaceSize();++i){
         auto face = model->GetVertexIndex(i);
         for(int j = 0;j<3;++j){
             auto vertex = model->GetVertByIndex(face[j]);
-            screen_pos[j] = WorldToScreen(vertex);
+            screen_pos[j] = HomoDivision(view_port * PerspectiveProjection() * VectorToMatrix(vertex));
             world_pos[j] = vertex;
         }
         Vec3f norm_vec = (world_pos[2] - world_pos[0]) ^ (world_pos[1] - world_pos[0]);
@@ -202,12 +257,22 @@ int main(int argc, char **argv)
         auto intensity = norm_vec * dir;
         if(intensity > 0){
             std::array <Vec2i,3>uv_pos;
-            for(int j = 0;j<3;++j) uv_pos[j] = model->GetUVByIndex(i,j);
+            for(int k = 0;k<3;++k) uv_pos[k] = model->GetUVByIndex(i,k);
             DrawTriangle(screen_pos,uv_pos,z_buffer,intensity,image);
         }
     }
     image.flip_vertically(); // 中心点在图片的左下角
     image.write_tga_file("../output/output.tga");
+
+    //画出Z_Buffer的图像
+    TGAImage z_buffer_image(kWidth, kHeight, TGAImage::GRAYSCALE);
+    for (int i=0; i<kWidth; i++) {
+        for (int j=0; j<kHeight; j++) {
+            z_buffer_image.set(i, j, TGAColor(z_buffer[i + j * kWidth], 1));
+        }
+    }
+    z_buffer_image.flip_vertically();
+    z_buffer_image.write_tga_file("../output/zbuffer.tga");
 
     return 0;
 }
