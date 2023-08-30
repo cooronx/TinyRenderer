@@ -20,25 +20,25 @@ Model::Model(const char *filename) : verts_(), faces_() {
         char trash;
         if (!line.compare(0, 2, "v ")) {
             iss >> trash;
-            Vec3f v;
+            Vector3f v;
             for(int i = 0;i<3;++i) iss >> v[i];
             verts_.push_back(v);
         }
         else if(!line.compare(0, 3, "vt ")) {
             iss >> trash >> trash;
-            Vec2f uv;
+            Vector2f uv;
             for (int i = 0; i < 2; i++) iss >> uv[i];
             uv_.push_back(uv);
         }
         else if (!line.compare(0, 3, "vn ")) {
             iss >> trash >> trash;
-            Vec3f normal;
+            Vector3f normal;
             for (int i = 0; i < 3; i++) iss >> normal[i];
             norms_.push_back(normal);
         }
         else if (!line.compare(0, 2, "f ")) {
-            std::vector<Vec3i> f;
-            Vec3i temp{};
+            std::vector<Vector3i> f;
+            Vector3i temp{};
             int itrash, idx;
             iss >> trash;
             while (iss >> temp[0] >> trash >> temp[1] >> trash >> temp[2]) {
@@ -65,14 +65,14 @@ int Model::GetFaceSize() {
 
 std::vector<int> Model::GetVertexIndex(int idx) {
     std::vector<int> face{};
-    std::vector<Vec3i> tmp = faces_[idx];
+    std::vector<Vector3i> tmp = faces_[idx];
     face.reserve(tmp.size());
     for (auto & i : tmp)
         face.push_back(i[0]);
     return face;
 }
 
-Vec3f Model::GetVertByIndex(int i) {
+Vector3f Model::GetVertByIndex(int i) {
     return verts_[i];
 }
 
@@ -87,13 +87,13 @@ void Model::LoadTexture(const std::string &obj_filename, const std::string &suff
 
 }
 
-TGAColor Model::Diffuse(Vec2i uv) {
-    return diffuse_map_.get(uv.x,uv.y);
+TGAColor Model::Diffuse(Vector2f uv) {
+    return diffuse_map_.get(static_cast <int>(uv.x()), static_cast <int> (uv.y()));
 }
 
-Vec2i Model::GetUVByIndex(int face_index, int vertex_cnt) {
+Vector2f Model::GetUVByIndex(int face_index, int vertex_cnt) {
     int index = faces_[face_index][vertex_cnt][1];
-    return {static_cast<int>(uv_[index].x * diffuse_map_.get_width()),
-            static_cast<int>(uv_[index].y * diffuse_map_.get_height())};
+    return {static_cast<int>(uv_[index].x() * diffuse_map_.get_width()),
+            static_cast<int>(uv_[index].y() * diffuse_map_.get_height())};
 }
 
