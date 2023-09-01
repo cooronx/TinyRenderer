@@ -24,7 +24,7 @@ public:
     TGAColor Diffuse(Vector2f uv);
     Vector2f GetUVByIndex(int face_index,int vertex_cnt);
 private:
-    void LoadTexture(const std::string &obj_filename,const std::string &suffix,TGAImage &image);
+    static void LoadTexture(const std::string &obj_filename,const std::string &suffix,TGAImage &image);
 };
 
 #endif //MODEL_H_

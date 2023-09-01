@@ -10,4 +10,6 @@ add_executable(TinyRenderer main.cpp
         model.cpp
         tgaimage.cpp
         camera.cpp
+        tinyrenderer.cpp
+        include/tinyrenderer.h
 )

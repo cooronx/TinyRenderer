@@ -5,8 +5,8 @@
 #include "model.h"
 #include <memory>
 #include <array>
-#include <iostream>
 #include <Eigen/Dense>
+#include <iostream>
 
 
 using namespace renderer;
@@ -15,7 +15,7 @@ using Eigen::Vector4f;
 const TGAColor red = TGAColor(255, 0, 0, 255);
 const TGAColor green = TGAColor(0,255,0,255);
 Vector3f target{0,0,0};
-Vector3f camera_pos{0,0.5,1};
+Vector3f camera_pos{0,0,2};
 
 //我们这里默认近平面=0，远平面=255
 const int kDepth = 255;
@@ -205,9 +205,17 @@ Vector3f HomoDivision(const Eigen::Matrix4Xf m) {
 
 /// 透视投影
 /// \return 投影矩阵
-Matrix4f PerspectiveProjection(const Vector3f& camera_pos){
-    Matrix4f projection = Matrix4f::Identity();
-    projection(3,2) = -1.f/camera_pos.z();
+Matrix4f PerspectiveProjection(float eye_fov, float aspect_ratio,
+                               float zNear, float zFar){
+    eye_fov = eye_fov / 180 * EIGEN_PI;
+    Eigen::Matrix4f projection = Eigen::Matrix4f::Identity();
+    Eigen::Matrix4f aspect_fovY;
+    float ty = -1.0f / tan(eye_fov / 2.0f);
+    aspect_fovY << (ty / aspect_ratio), 0, 0, 0,
+            0, ty, 0, 0,
+            0, 0, (zNear+zFar)/(zNear-zFar), (-2*zNear*zFar)/(zFar-zNear),
+            0, 0, 1, 0;
+    projection = aspect_fovY * projection;
     return projection;
 }
 
@@ -249,14 +257,15 @@ int main(int argc, char **argv)
     //这里要将视口左下脚略微上移动，不然会出现负的坐标值
     Matrix4f view_port = ViewPort(kWidth / 8, kHeight / 8, kWidth * 3 / 4, kHeight * 3 / 4);
 
-
+    auto per = PerspectiveProjection(80.0f,1.0*kWidth/kHeight,  0.1f,200.0f);
+    //std::cout<<per;
     for(int i = 0;i<model->GetFaceSize();++i){
         auto face = model->GetVertexIndex(i);
         for(int j = 0;j<3;++j){
             auto vertex = model->GetVertByIndex(face[j]);
             Vector4f homo_vertex = {vertex.x(),vertex.y(),vertex.z(),1.0f};
             screen_pos[j] = HomoDivision(view_port *
-                    PerspectiveProjection(camera->CameraPos()) *
+                    per *
                     look_at *
                     homo_vertex);
             world_pos[j] = vertex;

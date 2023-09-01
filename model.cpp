@@ -39,7 +39,6 @@ Model::Model(const char *filename) : verts_(), faces_() {
         else if (!line.compare(0, 2, "f ")) {
             std::vector<Vector3i> f;
             Vector3i temp{};
-            int itrash, idx;
             iss >> trash;
             while (iss >> temp[0] >> trash >> temp[1] >> trash >> temp[2]) {
                 for(int i = 0;i<3;++i){temp[i]--;}
