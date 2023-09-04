@@ -58,8 +58,16 @@ struct TGAColor {
 		}
 		return *this;
 	}
+    TGAColor operator *(float intensity) const {
+        TGAColor res = *this;
+        intensity = (intensity>1.f?1.f:(intensity<0.f?0.f:intensity));
+        for (int i=0; i<4; i++) res.raw[i] = raw[i]*intensity;
+        return res;
+    }
 };
-
+const TGAColor kWhite = TGAColor(255, 255, 255, 255);
+const TGAColor kRed = TGAColor(255, 0, 0, 255);
+const TGAColor kGreen = TGAColor(0,255,0,255);
 
 
 class TGAImage {

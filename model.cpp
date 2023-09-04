@@ -50,6 +50,8 @@ Model::Model(const char *filename) : verts_(), faces_() {
     std::cerr << "# v# " << verts_.size() << " f# "  << faces_.size() << std::endl;
     //加载纹理
     LoadTexture(filename,"_diffuse.tga",diffuse_map_);
+    LoadTexture(filename,"_normal.tga",normal_map_);
+    LoadTexture(filename,"_spec.tga",spec_map_);
 }
 
 Model::~Model() = default;
@@ -87,6 +89,7 @@ void Model::LoadTexture(const std::string &obj_filename, const std::string &suff
 }
 
 TGAColor Model::Diffuse(Vector2f uv) {
+    //Vector2i uv(uvf[0]*diffuse_map_.get_width(), uvf[1]*diffuse_map_.get_height());
     return diffuse_map_.get(static_cast <int>(uv.x()), static_cast <int> (uv.y()));
 }
 
@@ -95,4 +98,31 @@ Vector2f Model::GetUVByIndex(int face_index, int vertex_cnt) {
     return {static_cast<int>(uv_[index].x() * diffuse_map_.get_width()),
             static_cast<int>(uv_[index].y() * diffuse_map_.get_height())};
 }
+
+Vector3f Model::GetVertexNorm(size_t face_index, size_t vertex_num) {
+    int idx = faces_[face_index][vertex_num][2];
+    norms_[idx].normalize();
+    return norms_[idx];
+}
+
+Vector3f Model::GetVertPosByIndex(size_t face_index, size_t vertex_num) {
+    int idx = faces_[face_index][vertex_num][0];
+    return verts_[idx];
+}
+
+Vector3f Model::Normal(Vector2f uv) {
+    //Vector2i uv(uvf[0]*normal_map_.get_width(), uvf[1]*normal_map_.get_height());
+    TGAColor c = normal_map_.get(uv[0], uv[1]);
+    Vector3f res;
+    for (int i=0; i<3; i++)
+        res[2-i] = (float)c.raw[i]/255.f*2.f - 1.f;//从(0,255)转换到(-1,1)
+    return res;
+}
+
+float Model::Spec(Vector2f uvf) {
+    Vector2i uv(uvf[0]*spec_map_.get_width(), uvf[1]*spec_map_.get_height());
+    return spec_map_.get(uv[0], uv[1]).raw[0]/1.0f;
+}
+
+
 
