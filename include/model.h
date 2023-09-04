@@ -3,7 +3,6 @@
 
 #include <vector>
 #include "tgaimage.h"
-#include <memory>
 #include <Eigen/Dense>
 
 using Eigen::Vector3f,Eigen::Vector3i,Eigen::Vector2f,Eigen::Vector2i;
