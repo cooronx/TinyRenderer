@@ -55,7 +55,7 @@ Model::Model(const char* filename)
     std::cerr << "# v# " << verts_.size() << " f# " << faces_.size() << std::endl;
     // 加载纹理
     LoadTexture(filename, "_diffuse.tga", diffuse_map_);
-    LoadTexture(filename, "_normal.tga", normal_map_);
+    LoadTexture(filename, "_normal_tangent.tga", normal_map_);
     LoadTexture(filename, "_spec.tga", spec_map_);
 }
 
