@@ -1,6 +1,7 @@
 #include "tgaimage.h"
 #include <fstream>
 #include <iostream>
+#include <cstring>
 
 TGAImage::TGAImage()
     : data(nullptr)

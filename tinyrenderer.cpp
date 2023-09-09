@@ -3,6 +3,7 @@
 //
 
 #include "tinyrenderer.h"
+#include <iostream>
 
 /// 透视投影
 /// \return 投影矩阵
@@ -43,12 +44,12 @@ renderer::TinyRenderer::TinyRenderer()
 {
     for (auto& row : z_buffer) {
         for (auto& cell : row) {
-            cell = std::numeric_limits<float>::min();
+            cell = -std::numeric_limits<float>::max();
         }
     }
 }
 
-void renderer::TinyRenderer::DrawTriangle(const std::array<Vector3f, 3>& pts, const Vector3f& world_z, IShader& shader, TGAImage& image)
+void renderer::TinyRenderer::DrawTriangle(const std::array<Vector3f, 3>& pts, const Vector3f& world_z, IShader& shader, TGAImage& image, bool isShadow)
 {
 
     Vector2f bounding_box_min { std::numeric_limits<float>::max(), std::numeric_limits<float>::max() };
@@ -87,8 +88,14 @@ void renderer::TinyRenderer::DrawTriangle(const std::array<Vector3f, 3>& pts, co
             float interpolated_z_value = bc_screen.x() * pts[0].z() + bc_screen.y() * pts[1].z() + bc_screen.z() * pts[2].z();
             if (interpolated_z_value > z_buffer[x][y]) {
                 z_buffer[x][y] = interpolated_z_value;
+
                 TGAColor color {};
-                shader.Fragment(bc_revised, color);
+
+                if (isShadow) {
+                    shader.Fragment(bc_screen, color);
+                } else {
+                    shader.Fragment(bc_revised, color);
+                }
                 image.set(x, y, color);
             }
         }
